@@ -11,6 +11,9 @@ class Instance:
         self.lemon_ratio = 1
         self.water_ratio = 3
         self.sugar_ratio = 2
+        self.lemonade_price = 1
+        self.lemonade_cogs = .5
+        self.lemonade_batch_size = 10
 
     def day_of_week_pick(self):
         days_of_week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
