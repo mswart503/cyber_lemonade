@@ -45,6 +45,9 @@ class Instance:
                               name="You open in " + str(9 - self.hour) + " hours")
 
         self.marker_list = [self.day_marker, self.weekday_marker, self.hour_marker, self.money_marker, self.cost_marker, self.lemonade_marker, self.prep_title]
+
+        self.lemonade_sold_today = Cardslot(salmon, 800, 140, 150, 70, None, False, name=0, strength="Cups Sold Today")
+        self.money_made_today = Cardslot(salmon, 980, 140, 150, 70, None, False, name="$0", strength="Money Made Today")
     def day_of_week_pick(self):
         days_of_week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         return days_of_week[self.day % 7 - 1]
@@ -70,8 +73,13 @@ class Instance:
             self.hour_marker.name = str(self.hour)
             self.prep_title.name = "You open in " + str(9 - self.hour) + " hours"
 
-    def redraw_screen(self, win):
+    def redraw_screen(self, win, title_text = ""):
         win.fill(orange)
         win.blit(bg, (0, 0))
+        self.prep_title.name = title_text
         self.build_markers(win)
 
+    def build_selling_phase(self, win):
+        self.lemonade_sold_today.draw(win, outline=True, textdrop = 13)
+        self.money_made_today.draw(win, outline=True, textdrop = 13)
+        pygame.display.flip()

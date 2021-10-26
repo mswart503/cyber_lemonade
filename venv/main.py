@@ -115,11 +115,12 @@ def game_loop(win, bg):
                 if make_lemonade_title.isOver(pos):
                     cur_instance.update_markers(new_lemonade = cur_instance.lemonade_batch_size, new_money = cur_instance.lemonade_cogs*cur_instance.lemonade_batch_size, new_hour = 1)
                     cur_instance.build_markers(win)
-            if cur_instance.open_time == cur_instance.hour:
-                prep = True
-                break
+                    if int(cur_instance.open_time) == int(cur_instance.hour):
+                        prep = False
+                        break
 
-    cur_instance.redraw_screen(win)
+    cur_instance.redraw_screen(win, title_text="You close in " + str(17 - cur_instance.hour) + " hours")
+    cur_instance.build_selling_phase(win)
     # Selling phase
     selling = True
     while selling:
