@@ -33,7 +33,7 @@ def menu():
     win.fill(orange)
     win.blit(bg, (0, 0))
     welcome = Textbox(salmon, screenwidth/2-300, 30, 600, 50, "Welcome To Cyber Lemonade",40)
-    start_summer = Cardslot(salmon, 940, 140, 200, 80, None, False, name="Start Summer")
+    start_summer = Cardslot(salmon, 840, 140, 300, 80, None, False, name="Start Summer")
     options = Cardslot(salmon, start_summer.x, start_summer.y+start_summer.height+40, start_summer.width, start_summer.height, None, False, name="Options")
     awards = Cardslot(salmon, start_summer.x, options.y+options.height+40, options.width, options.height, None, False, name="Awards")
     welcome.draw(win, outline=True)
@@ -57,8 +57,8 @@ def begin_instance(win, bg):
     win.blit(bg, (0, 0))
     explainer = Textbox(salmon, screenwidth / 2 - 455, 200, 910, 200,
                         "Summer is here! Your father has given you ownership of one of his lemonade stands. "
-                        "You get $100 to start, if you run out of money you have to close up shop. Can you make"
-                        "it to the end of summer? Good luck!", 30)
+                        "You get $20 to start, if you run out of money you have to close up shop. Can you make"
+                        " it to the end of summer? Good luck!", 30)
     close_explainer = Cardslot(red_grey, explainer.x+375, 335, 150, 50, None, False, name="Let's Go")
     explainer.draw(win, outline=True)
     close_explainer.draw(win, outline=True)
@@ -79,39 +79,55 @@ def game_loop(win, bg):
     win.fill(orange)
     win.blit(bg, (0, 0))
     cur_instance = Instance()
-    day = Cardslot(salmon, 40, 40, 60, 80, None, False, name=str(cur_instance.day), strength="Day")
-    weekday = Cardslot(salmon, day.x + day.width + 30, 40, 90, 80, None, False, name=cur_instance.weekday,
-                       strength="Weekday")
-    hour = Cardslot(salmon, weekday.x + weekday.width + 30, 40, 60, 80, None, False, name=str(cur_instance.hour),
-                    strength="Hour")
-    money = Cardslot(salmon, hour.x + hour.width + 200, 40, 90, 80, None, False, name="$ "+str(cur_instance.money),
-                    strength="Money")
-    cost_display = Cardslot(salmon, 235, 670, 150, 60, None, False, name="$ "+str(cur_instance.lemonade_price),
-                    strength="Current Price:")
-    lemonade = Cardslot(salmon, money.x + money.width + 30, 40, 90, 80, None, False, name=str(cur_instance.lemonade),
-                    strength="Lemonade")
-    prep_title = Cardslot(light_yellow, 750, 40, 420, 60, None, False, name="You open in "+str(9-cur_instance.hour)+" hours")
-    make_lemonade = Cardslot(light_yellow, 760, 140, 400, 60, None, False, name="Make Lemonade Batch - $ "+str(int(cur_instance.lemonade_cogs*cur_instance.lemonade_batch_size))+
-                                                                                " for "+str(cur_instance.lemonade_batch_size)+" cups")
-    raise_price = Cardslot(light_yellow, 760, make_lemonade.y+100, 400, 60, None, False, name="Raise Lemonade Price by $ 1")
 
-    day.draw(win, outline=True, textdrop = 13)
-    weekday.draw(win, outline=True, textdrop = 13)
-    hour.draw(win, outline=True, textdrop = 13)
-    money.draw(win, outline=True, textdrop = 13)
-    lemonade.draw(win, outline=True, textdrop = 13)
-    prep_title.draw(win, outline=True)
-    make_lemonade.draw(win, outline=True)
-    cost_display.draw(win, outline=True, textdrop = 15)
+    # Markers
+    cur_instance.build_markers(win)
+
+    make_lemonade_title = Cardslot(light_yellow, 760, 140, 400, 60, None, False, name="Make Lemonade Batch")
+    make_lemonade_amount = Cardslot(salmon, 860, 205, 200, 40, None, False, name= str(cur_instance.lemonade_batch_size)+" cups for $"+str(int(cur_instance.lemonade_batch_size*cur_instance.lemonade_cogs)))
+    raise_price = Cardslot(light_yellow, 765, 275, 175, 50, None, False, name="Raise Price $1")
+    lower_price = Cardslot(light_yellow, 980, raise_price.y, raise_price.width, raise_price.height, None, False, name="Lower Price $1")
+    upgrades = Cardslot(light_yellow, 760, 360, 400, 60, None, False, name="Upgrades")
+
+    #day.draw(win, outline=True, textdrop = 13)
+    #weekday.draw(win, outline=True, textdrop = 13)
+    #hour.draw(win, outline=True, textdrop = 13)
+    #money.draw(win, outline=True, textdrop = 13)
+    #lemonade.draw(win, outline=True, textdrop = 13)
+    #prep_title.draw(win, outline=True)
+    make_lemonade_title.draw(win, outline=True)
+    make_lemonade_amount.draw(win, outline=True)
+    #cost_display.draw(win, outline=True, textdrop = 15)
     raise_price.draw(win, outline=True)
+    lower_price.draw(win, outline=True)
+    upgrades.draw(win, outline=True)
+
     pygame.display.flip()
-    start = False
-    while start == False:
+
+    # Prep Phase
+    prep = True
+    while prep:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                if day.isOver(pos):
-                    pass
+                if make_lemonade_title.isOver(pos):
+                    cur_instance.update_markers(new_lemonade = cur_instance.lemonade_batch_size, new_money = cur_instance.lemonade_cogs*cur_instance.lemonade_batch_size, new_hour = 1)
+                    cur_instance.build_markers(win)
+            if cur_instance.open_time == cur_instance.hour:
+                prep = True
+                break
+
+    cur_instance.redraw_screen(win)
+    # Selling phase
+    selling = True
+    while selling:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+
+
 menu()
