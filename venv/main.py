@@ -116,6 +116,7 @@ def game_loop(win, bg):
                     cur_instance.update_markers(new_lemonade = cur_instance.lemonade_batch_size, new_money = cur_instance.lemonade_cogs*cur_instance.lemonade_batch_size, new_hour = 1)
                     cur_instance.build_markers(win)
                     if int(cur_instance.open_time) == int(cur_instance.hour):
+
                         prep = False
                         break
 

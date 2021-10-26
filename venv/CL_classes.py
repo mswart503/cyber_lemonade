@@ -82,4 +82,5 @@ class Instance:
     def build_selling_phase(self, win):
         self.lemonade_sold_today.draw(win, outline=True, textdrop = 13)
         self.money_made_today.draw(win, outline=True, textdrop = 13)
+
         pygame.display.flip()
