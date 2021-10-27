@@ -89,15 +89,8 @@ def game_loop(win, bg):
     lower_price = Cardslot(light_yellow, 980, raise_price.y, raise_price.width, raise_price.height, None, False, name="Lower Price $1")
     upgrades = Cardslot(light_yellow, 760, 360, 400, 60, None, False, name="Upgrades")
 
-    #day.draw(win, outline=True, textdrop = 13)
-    #weekday.draw(win, outline=True, textdrop = 13)
-    #hour.draw(win, outline=True, textdrop = 13)
-    #money.draw(win, outline=True, textdrop = 13)
-    #lemonade.draw(win, outline=True, textdrop = 13)
-    #prep_title.draw(win, outline=True)
     make_lemonade_title.draw(win, outline=True)
     make_lemonade_amount.draw(win, outline=True)
-    #cost_display.draw(win, outline=True, textdrop = 15)
     raise_price.draw(win, outline=True)
     lower_price.draw(win, outline=True)
     upgrades.draw(win, outline=True)
@@ -122,9 +115,11 @@ def game_loop(win, bg):
 
     cur_instance.redraw_screen(win, title_text="You close in " + str(17 - cur_instance.hour) + " hours")
     cur_instance.build_selling_phase(win)
+
     # Selling phase
     selling = True
     while selling:
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()

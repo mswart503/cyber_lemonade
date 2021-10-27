@@ -3,7 +3,7 @@ from CL_Adapted_elfClasses import Textbox
 import pygame
 from pygame import *
 import os
-import random
+import random, json
 pygame.init()
 
 background = "Backgrounds/the_stand_smaller.jpg"
@@ -17,6 +17,7 @@ brown = (124,74,52)
 
 class Instance:
     def __init__(self):
+        self.society = Society()
         self.day = 1
         days_of_week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         self.weekday = days_of_week[self.day % 7 - 1]
@@ -30,6 +31,9 @@ class Instance:
         self.lemonade_cogs = .5
         self.lemonade_batch_size = 4
         self.open_time = 9
+        self.new_customer_ratio = .2
+
+        # permanent markers around store
         self.day_marker = Cardslot(salmon, 40, 40, 60, 80, None, False, name=str(self.day), strength="Day")
         self.weekday_marker = Cardslot(salmon, self.day_marker.x + self.day_marker.width + 30, 40, 90, 80, None, False, name=self.weekday,
                            strength="Weekday")
@@ -46,8 +50,12 @@ class Instance:
 
         self.marker_list = [self.day_marker, self.weekday_marker, self.hour_marker, self.money_marker, self.cost_marker, self.lemonade_marker, self.prep_title]
 
+        # selling phase markers
         self.lemonade_sold_today = Cardslot(salmon, 800, 140, 150, 70, None, False, name=0, strength="Cups Sold Today")
         self.money_made_today = Cardslot(salmon, 980, 140, 150, 70, None, False, name="$0", strength="Money Made Today")
+        self.customer_interaction = Textbox(red_grey, 800, 230, 340, 120, 20)
+
+
     def day_of_week_pick(self):
         days_of_week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         return days_of_week[self.day % 7 - 1]
@@ -82,5 +90,64 @@ class Instance:
     def build_selling_phase(self, win):
         self.lemonade_sold_today.draw(win, outline=True, textdrop = 13)
         self.money_made_today.draw(win, outline=True, textdrop = 13)
-
+        self.customer_interaction.draw(win, outline=True)
         pygame.display.flip()
+
+    def selling_hour(self, win):
+        new_customers = random.randint(0, 3)
+        hour_modifier = round(self.new_customer_ratio*(self.hour-9))
+        new_customers = new_customers+hour_modifier
+
+
+    def customer_interaction(self, customer):
+        pass
+
+
+class Society:
+    def __init__(self):
+        self.people = {}
+        self.groups = {}
+
+        if os.stat("saved_game/society.txt").st_size == 0:
+            self.create_new_society()
+        else:
+            with open("saved_game/society.txt") as json_file:
+                data = json.load(json_file)
+        print(self.people)
+        print(self.groups)
+        input("check")
+    def create_new_society(self):
+        self.first_names = ["Baron", "Bianca", "Marty", "Shannon", "Filbert", "Draco", "Grace", "Constantine",
+                            "Catalina", "Lenny"]
+        self.last_names = ["Viel", "Combat", "Wellwish", "Smith", "Serenity", "Rivers", "Xylo", "Yillman"]
+        self.group_names = ["Wishers","Dreamers","Battlers","Conspirators","Lookers","Beauties","Mondays","Utilities",
+                            "Reavers","Toppers","Accelerants"]
+        for g_names in self.group_names:
+            self.groups[g_names] = []
+        self.used_names = []
+        customer_count = 10
+        count = 0
+        while count < customer_count:
+            not_new = True
+            while not_new:
+                first = self.first_names[random.randint(0, len(self.first_names)-1)]
+                last = self.last_names[random.randint(0, len(self.last_names)-1)]
+                name = first+" "+last
+                if name not in self.used_names:
+                    not_new = False
+                    self.used_names.append(name)
+            group = self.group_names[random.randint(0, len(self.group_names)-1)]
+            new_person = Customer(first, last, group)
+            self.people[name] = new_person
+            self.groups[group].append(new_person)
+            count += 1
+        with open("saved_game/society.txt", "w") as json_file:
+            save_stuff = [self.people, self.groups]
+            json.dump(save_stuff, json_file)
+
+class Customer:
+    def __init__(self, first_name, last_name, group):
+        self.visits = 0
+        self.name = first_name+" "+last_name
+        self.group = group
+
