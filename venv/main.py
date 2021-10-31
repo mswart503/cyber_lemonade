@@ -115,7 +115,6 @@ def game_loop(win, bg):
 
     cur_instance.redraw_screen(win, title_text="You close in " + str(17 - cur_instance.hour) + " hours")
     cur_instance.build_selling_phase(win)
-
     # Selling phase
     selling = True
     while selling:
@@ -125,6 +124,7 @@ def game_loop(win, bg):
                 quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
+                cur_instance.selling_hour(win)
 
 
 menu()

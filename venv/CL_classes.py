@@ -3,11 +3,12 @@ from CL_Adapted_elfClasses import Textbox
 import pygame
 from pygame import *
 import os
-import random, json
+import random, pickle
 pygame.init()
 
 background = "Backgrounds/the_stand_smaller.jpg"
 bg = pygame.image.load(background)
+clock = pygame.time.Clock()
 grey = (34,53,76)
 orange = (255,170,95)
 red_grey = (141,108,122)
@@ -53,21 +54,25 @@ class Instance:
         # selling phase markers
         self.lemonade_sold_today = Cardslot(salmon, 800, 140, 150, 70, None, False, name=0, strength="Cups Sold Today")
         self.money_made_today = Cardslot(salmon, 980, 140, 150, 70, None, False, name="$0", strength="Money Made Today")
-        self.customer_interaction = Textbox(red_grey, 800, 230, 340, 120, 20)
+        self.customer_interaction = Textbox(red_grey, 797, 230, 340, 120, "Saying Things!", 20)
+        self.customer_text = Textbox(red_grey, 100, 350, 200, 100,"Basic Text", 20)
 
 
     def day_of_week_pick(self):
         days_of_week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         return days_of_week[self.day % 7 - 1]
 
-    def build_markers(self, win):
+    def build_markers(self, win, noflip=""):
         for marker in self.marker_list:
             drop = 0
             if marker.strength != '':
                 drop = 13
 
             marker.draw(win, outline=True, textdrop=drop)
-        pygame.display.flip()
+        if noflip == "":
+            pygame.display.flip()
+        else:
+            pass
 
     def update_markers(self, new_lemonade=0, new_money = 0, new_hour = 0):
         if new_lemonade != 0:
@@ -81,11 +86,14 @@ class Instance:
             self.hour_marker.name = str(self.hour)
             self.prep_title.name = "You open in " + str(9 - self.hour) + " hours"
 
-    def redraw_screen(self, win, title_text = ""):
+    def redraw_screen(self, win, title_text = "", noflip = ""):
         win.fill(orange)
         win.blit(bg, (0, 0))
         self.prep_title.name = title_text
-        self.build_markers(win)
+        if noflip == "":
+            self.build_markers(win)
+        else:
+            self.build_markers(win, noflip = noflip)
 
     def build_selling_phase(self, win):
         self.lemonade_sold_today.draw(win, outline=True, textdrop = 13)
@@ -97,25 +105,58 @@ class Instance:
         new_customers = random.randint(0, 3)
         hour_modifier = round(self.new_customer_ratio*(self.hour-9))
         new_customers = new_customers+hour_modifier
+        self.customer_inter("darwin", win)
 
+    def customer_inter(self, customer, win):
+        self.move_up_to_counter(customer, win)
 
-    def customer_interaction(self, customer):
+    def move_up_to_counter(self, customer, win):
+        start_location = (0, 480)
+        end_location = (230, start_location[1])
+        cur_customer = pygame.image.load("/Users/Elizabeth/PycharmProjects/CyberLemonade/venv/characters/Random.png")
+        cur_location = start_location
+        win.blit(cur_customer, cur_location)
+        pygame.display.flip()
+        hover_loop = [-5, 5]
+        hover_loc = hover_loop[0]
+        hover_increase = True
+        while cur_location[0]<end_location[0]:
+            if hover_loc == hover_loop[1]:
+                hover_increase = False
+            elif hover_loc == hover_loop[0]:
+                hover_increase = True
+            first_loc_x = cur_location[0]
+            second_loc_x = int(first_loc_x)+3
+            first_loc_y = cur_location[1]
+            second_loc_y = int(first_loc_y) + hover_loc
+            if hover_increase == True:
+                hover_loc += .5
+            elif hover_increase == False:
+                hover_loc -= .5
+
+            cur_location = (second_loc_x, second_loc_y)
+            self.redraw_screen(win, noflip = "no")
+            win.blit(cur_customer, cur_location)
+            pygame.display.flip()
+            clock.tick(60)
+
+        input("hold it")
         pass
-
 
 class Society:
     def __init__(self):
         self.people = {}
         self.groups = {}
+        self.storage = []
 
-        if os.stat("saved_game/society.txt").st_size == 0:
+        if os.stat("saved_game/society.pickle").st_size == 0:
             self.create_new_society()
+            with open("saved_game/society.pickle", "wb") as file:
+                self.storage = file
+
         else:
-            with open("saved_game/society.txt") as json_file:
-                data = json.load(json_file)
-        print(self.people)
-        print(self.groups)
-        input("check")
+            self.people, self.groups, *_ = pickle.load(open("saved_game/society.pickle", "rb"))
+
     def create_new_society(self):
         self.first_names = ["Baron", "Bianca", "Marty", "Shannon", "Filbert", "Draco", "Grace", "Constantine",
                             "Catalina", "Lenny"]
@@ -141,9 +182,8 @@ class Society:
             self.people[name] = new_person
             self.groups[group].append(new_person)
             count += 1
-        with open("saved_game/society.txt", "w") as json_file:
-            save_stuff = [self.people, self.groups]
-            json.dump(save_stuff, json_file)
+        save_stuff = [self.people, self.groups]
+        pickle.dump(save_stuff, open("saved_game/society.pickle", 'wb'))
 
 class Customer:
     def __init__(self, first_name, last_name, group):
