@@ -95,16 +95,31 @@ class Instance:
         else:
             self.build_markers(win, noflip = noflip)
 
-    def build_selling_phase(self, win):
+    def build_selling_phase(self, win, noflip = ""):
         self.lemonade_sold_today.draw(win, outline=True, textdrop = 13)
         self.money_made_today.draw(win, outline=True, textdrop = 13)
         self.customer_interaction.draw(win, outline=True)
-        pygame.display.flip()
+        if noflip != "":
+            pass
+        else:
+            pygame.display.flip()
 
-    def selling_hour(self, win):
-        new_customers = random.randint(0, 3)
-        hour_modifier = round(self.new_customer_ratio*(self.hour-9))
-        new_customers = new_customers+hour_modifier
+    def setup_selling_hour(self):
+        cust_number = self.number_of_customer_this_hour()
+        counter = 0
+        times_to_show = []
+        while counter < cust_number:
+            show_up_time = random.randint(0, 60)
+            if show_up_time not in times_to_show:
+                times_to_show.append(show_up_time)
+                counter += 1
+        customers_to_show = random.sample(self.society.people_list, cust_number)
+        return times_to_show, customers_to_show
+
+    def selling_hour_tick(self, win):
+        timer = 0
+
+
         self.customer_inter("darwin", win)
 
     def customer_inter(self, customer, win):
@@ -135,7 +150,7 @@ class Instance:
                 hover_loc -= .5
 
             cur_location = (second_loc_x, second_loc_y)
-            self.redraw_screen(win, noflip = "no")
+            self.redraw_screen(win, noflip = "no", title_text="You close in " + str(17 - cur_instance.hour) + " hours")
             win.blit(cur_customer, cur_location)
             pygame.display.flip()
             clock.tick(60)
@@ -143,11 +158,18 @@ class Instance:
         input("hold it")
         pass
 
+    def number_of_customer_this_hour(self):
+        new_customers = random.randint(0, 3)
+        hour_modifier = round(self.new_customer_ratio*(self.hour-9))
+        new_customers = new_customers+hour_modifier
+        return new_customers
+
 class Society:
     def __init__(self):
         self.people = {}
         self.groups = {}
         self.storage = []
+        self.people_list = []
 
         if os.stat("saved_game/society.pickle").st_size == 0:
             self.create_new_society()
@@ -181,6 +203,8 @@ class Society:
             new_person = Customer(first, last, group)
             self.people[name] = new_person
             self.groups[group].append(new_person)
+            self.people_list.append(new_person)
+
             count += 1
         save_stuff = [self.people, self.groups]
         pickle.dump(save_stuff, open("saved_game/society.pickle", 'wb'))

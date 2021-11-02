@@ -24,6 +24,7 @@ brown = (124,74,52)
 screenwidth = 1200
 screenheight = 750
 
+clock = pygame.time.Clock()
 
 def menu():
     pygame.display.set_caption('Cyber Lemonade')
@@ -117,14 +118,22 @@ def game_loop(win, bg):
     cur_instance.build_selling_phase(win)
     # Selling phase
     selling = True
+    timer = 0
     while selling:
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                cur_instance.selling_hour(win)
+        # input("hello")
+        clock.tick(60)
+        timer += 1
+        if timer >= 60:
+            cur_instance.hour += 1
+            cur_instance.redraw_screen(win, title_text="You close in " + str(17 - cur_instance.hour) + " hours", noflip = "no")
+            cur_instance.build_selling_phase(win)
+            timer = 0
+                #cur_instance.selling_hour(win)
 
 
 menu()
