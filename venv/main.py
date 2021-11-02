@@ -119,7 +119,9 @@ def game_loop(win, bg):
     # Selling phase
     selling = True
     timer = 0
+    customer_list_with_time = cur_instance.setup_selling_hour()
     while selling:
+        cur_instance.move_in_time(customer_list_with_time, win, timer)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
@@ -127,8 +129,9 @@ def game_loop(win, bg):
                 pos = pygame.mouse.get_pos()
         # input("hello")
         clock.tick(60)
-        timer += 1
-        if timer >= 60:
+        timer += 10
+        if timer >= 600:
+            customer_list_with_time = cur_instance.setup_selling_hour()
             cur_instance.hour += 1
             cur_instance.redraw_screen(win, title_text="You close in " + str(17 - cur_instance.hour) + " hours", noflip = "no")
             cur_instance.build_selling_phase(win)

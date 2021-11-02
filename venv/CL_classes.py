@@ -114,7 +114,15 @@ class Instance:
                 times_to_show.append(show_up_time)
                 counter += 1
         customers_to_show = random.sample(self.society.people_list, cust_number)
-        return times_to_show, customers_to_show
+        customer_list_with_time = []
+
+        # empty lists are false so the following runs until the list is empty
+        while customers_to_show:
+            cust_to_add = customers_to_show.pop()
+            cust_to_add.arrival_time = times_to_show.pop()
+            customer_list_with_time.append(cust_to_add)
+        return customer_list_with_time
+
 
     def selling_hour_tick(self, win):
         timer = 0
@@ -125,7 +133,33 @@ class Instance:
     def customer_inter(self, customer, win):
         self.move_up_to_counter(customer, win)
 
-    def move_up_to_counter(self, customer, win):
+    # This moves the customer to the counter while allowing events to continue
+    def move_in_time(self, customer_list, win, actual_time, noflip=""):
+
+        for customer in customer_list:
+            if customer.arrival_time <= actual_time:
+                customer.arrived = True
+            if customer.arrived:
+                cur_customer = pygame.image.load(customer.image)
+                current_location = customer.location
+                if customer.hover_location == customer.hover_loop[1]:
+                    customer.hover_increase = False
+                elif customer.hover_location == customer.hover_loop[0]:
+                    customer.hover_increase = True
+
+                new_location = (current_location[0]+3, current_location[1] + customer.hover_location)
+                customer.location = new_location
+                if customer.hover_increase ==True:
+                    customer.hover_location += .5
+                elif customer.hover_increase ==False:
+                    customer.hover_location -= .5
+                self.redraw_screen(win, noflip = "no", title_text="You close in " + str(17 - self.hour) + " hours")
+                win.blit(cur_customer, new_location)
+            pygame.display.flip()
+
+
+    # This moves the customer up to the counter all at once pausing all events
+    def move_up_to_counter(self, customer, win, time):
         start_location = (0, 480)
         end_location = (230, start_location[1])
         cur_customer = pygame.image.load("/Users/Elizabeth/PycharmProjects/CyberLemonade/venv/characters/Random.png")
@@ -214,4 +248,10 @@ class Customer:
         self.visits = 0
         self.name = first_name+" "+last_name
         self.group = group
-
+        self.location = (0, 400)
+        self.image = "/Users/Elizabeth/PycharmProjects/CyberLemonade/venv/characters/Random.png"
+        self.hover_loop = [-5, 5]
+        self.hover_location = self.hover_loop[0]
+        self.hover_increase = True
+        self.arrival_time = 0
+        self.arrived = False
